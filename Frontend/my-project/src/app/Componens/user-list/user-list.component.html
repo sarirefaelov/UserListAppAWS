@@ -1,0 +1,107 @@
+<div class="user-list-container">
+  <h1>ניהול משתמשים</h1>
+  
+  <!-- כפתורים עליונים -->
+  <div class="actions">
+    <button (click)="loadUsers()" [disabled]="loading" class="btn-refresh">
+      <span *ngIf="!loading">🔄 רענן רשימה</span>
+      <span *ngIf="loading">⏳ טוען...</span>
+    </button>
+    <button (click)="openAddUserForm()" [disabled]="loading" class="btn-add">
+      ➕ הוסף משתמש חדש
+    </button>
+  </div>
+
+  <!-- הודעת שגיאה -->
+  <div *ngIf="error" class="error-message">
+    ❌ {{ error }}
+    <button (click)="error = null" class="close-btn">✖</button>
+  </div>
+
+  <!-- הודעת הצלחה -->
+  <div *ngIf="successMessage" class="success-message">
+    ✅ {{ successMessage }}
+    <button (click)="successMessage = null" class="close-btn">✖</button>
+  </div>
+
+  <!-- טופס הוספה/עריכה -->
+  <div *ngIf="showForm" class="user-form">
+    <h3>{{ editingUser ? 'ערוך משתמש' : 'הוסף משתמש חדש' }}</h3>
+    <div class="form-group">
+      <label>שם המשתמש:</label>
+      <input 
+        type="text" 
+        [(ngModel)]="formName" 
+        placeholder="הכנס שם"
+        (keyup.enter)="saveUser()"
+        autofocus
+      />
+    </div>
+    <div class="form-actions">
+      <button (click)="saveUser()" [disabled]="!formName.trim()" class="btn-save">
+        💾 שמור
+      </button>
+      <button (click)="cancelForm()" class="btn-cancel">
+        ❌ ביטול
+      </button>
+    </div>
+  </div>
+
+  <!-- אינדיקטור טעינה -->
+  <div *ngIf="loading" class="loading-spinner">
+    <div class="spinner"></div>
+    <p>טוען נתונים...</p>
+  </div>
+
+  <!-- טבלת משתמשים -->
+  <div *ngIf="!loading && users.length > 0" class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>מזהה</th>
+          <th>שם</th>
+          <th>פעולות</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users; let i = index" [class.editing]="editingUser?.Id === user.Id">
+          <td>{{ i + 1 }}</td>
+          <td>{{ user.Id }}</td>
+          <td>
+            <strong>{{ user.Name }}</strong>
+          </td>
+          <td class="actions-cell">
+            <button 
+              (click)="openEditUserForm(user)" 
+              class="btn-edit"
+              title="ערוך משתמש"
+            >
+              ✏️ ערוך
+            </button>
+            <button 
+              (click)="deleteUserConfirm(user)" 
+              class="btn-delete"
+              title="מחק משתמש"
+            >
+              🗑️ מחק
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="total-users">
+      סך הכל: <strong>{{ users.length }}</strong> משתמשים
+    </div>
+  </div>
+
+  <!-- הודעה כשאין משתמשים -->
+  <div *ngIf="!loading && users.length === 0" class="no-data">
+    <div class="empty-state">
+      <p>📭 אין משתמשים במערכת</p>
+      <button (click)="openAddUserForm()" class="btn-add-large">
+        ➕ הוסף משתמש ראשון
+      </button>
+    </div>
+  </div>
+</div>
