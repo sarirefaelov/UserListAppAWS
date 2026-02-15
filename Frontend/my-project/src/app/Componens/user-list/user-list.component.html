@@ -65,11 +65,11 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let user of users; let i = index" [class.editing]="editingUser?.Id === user.Id">
+        <tr *ngFor="let user of users; let i = index" [class.editing]="editingUser?.id === user.id">
           <td>{{ i + 1 }}</td>
-          <td>{{ user.Id }}</td>
+          <td>{{ user.id }}</td>
           <td>
-            <strong>{{ user.Name }}</strong>
+            <strong>{{ user.name }}</strong>
           </td>
           <td class="actions-cell">
             <button 
