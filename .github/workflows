@@ -1,0 +1,44 @@
+name: Deploy Backend to AWS EC2
+
+on:
+  push:
+    branches:
+      - main  # יופעל רק כשדוחפים ל-main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore Backend/TestSara
+
+    - name: Build Backend
+      run: dotnet build Backend/TestSara --configuration Release --no-restore
+
+    - name: Publish Backend
+      run: dotnet publish Backend/TestSara --configuration Release --output ./publish
+
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_IP }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        port: 22
+        script: |
+          mkdir -p ~/UserListAppBackend
+          rm -rf ~/UserListAppBackend/*
+          cp -r ./publish/* ~/UserListAppBackend/
+          # כאן אפשר להוסיף הפעלת השירות או הפקודה להריץ את ה-.NET
+          # לדוגמה:
+          # pkill -f 'dotnet TestSara.dll' || true
+          # nohup dotnet ~/UserListAppBackend/TestSara.dll > ~/UserListAppBackend/log.txt 2>&1 &
