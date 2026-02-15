@@ -60,7 +60,7 @@ export class UserListComponent implements OnInit {
   openEditUserForm(user: User) {
     this.showForm = true;
     this.editingUser = user;
-    this.formName = user.Name;
+    this.formName = user.name;
     this.error = null;
     this.successMessage = null;
   }
@@ -83,7 +83,7 @@ export class UserListComponent implements OnInit {
 
     if (this.editingUser) {
       // Edit
-      this.updateUser(this.editingUser.Id, name);
+      this.updateUser(this.editingUser.id, name);
     } else {
       // Add
       this.addUser(name);
@@ -92,12 +92,12 @@ export class UserListComponent implements OnInit {
 
   // Add new user
   addUser(name: string) {
-    const newUser: User = { Id: 0, Name: name };
+    const newUser: User = { id: 0, name: name };
     
     this.userService.addUser(newUser).subscribe({
       next: user => {
         console.log('✅ User added:', user);
-        this.successMessage = `User "${user.Name}" added successfully!`;
+        this.successMessage = `User "${user.name}" added successfully!`;
         this.cancelForm();
         this.loadUsers(); 
         
@@ -112,12 +112,12 @@ export class UserListComponent implements OnInit {
 
   // Update existing user
   updateUser(id: number, name: string) {
-    const updatedUser: User = { Id: id, Name: name };
+    const updatedUser: User = { id: id, name: name };
     
     this.userService.updateUser(id, updatedUser).subscribe({
       next: user => {
         console.log('✅ User updated:', user);
-        this.successMessage = `User updated to "${user.Name}" successfully!`;
+        this.successMessage = `User updated to "${user.name}" successfully!`;
         this.cancelForm();
         this.loadUsers(); 
         
@@ -132,7 +132,7 @@ export class UserListComponent implements OnInit {
 
   // Delete user with confirmation
   deleteUserConfirm(user: User) {
-    const confirmed = confirm(`Are you sure you want to delete user "${user.Name}"?`);
+    const confirmed = confirm(`Are you sure you want to delete user "${user.name}"?`);
     
     if (!confirmed) {
       return;
@@ -143,10 +143,10 @@ export class UserListComponent implements OnInit {
 
   // Delete user
   deleteUser(user: User) {
-    this.userService.deleteUser(user.Id).subscribe({
+    this.userService.deleteUser(user.id).subscribe({
       next: () => {
-        console.log('✅ User deleted:', user.Id);
-        this.successMessage = `User "${user.Name}" deleted successfully!`;
+        console.log('✅ User deleted:', user.id);
+        this.successMessage = `User "${user.name}" deleted successfully!`;
         this.loadUsers(); 
         
         setTimeout(() => this.successMessage = null, 3000);
