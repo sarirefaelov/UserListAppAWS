@@ -1,5 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using Test.Model;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +15,12 @@ builder.Services.AddCors(options =>
         policy => policy.AllowAnyOrigin()
                         .AllowAnyMethod()
                         .AllowAnyHeader());
+});
+
+// Configure Kestrel to listen on all IPs
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5234); // מאזין לכל כתובת ציבורית
 });
 
 var app = builder.Build();
