@@ -5,6 +5,7 @@ on:
     branches:
       - main  # יופעל רק כשדוחפים ל-main
 
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
