@@ -4516,11 +4516,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\This User\\Desktop\\קבוצת יעל\\UserListApp\\צד שרת\\Test\\Test.csproj",
+      "projectUniqueName": "C:\\Users\\This User\\Desktop\\AWS\\UserListApp\\Backend\\Test\\Test.csproj",
       "projectName": "Test",
-      "projectPath": "C:\\Users\\This User\\Desktop\\קבוצת יעל\\UserListApp\\צד שרת\\Test\\Test.csproj",
+      "projectPath": "C:\\Users\\This User\\Desktop\\AWS\\UserListApp\\Backend\\Test\\Test.csproj",
       "packagesPath": "C:\\Users\\This User\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\This User\\Desktop\\קבוצת יעל\\UserListApp\\צד שרת\\Test\\obj\\",
+      "outputPath": "C:\\Users\\This User\\Desktop\\AWS\\UserListApp\\Backend\\Test\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
