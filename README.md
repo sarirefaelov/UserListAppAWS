@@ -1,10 +1,10 @@
-# 📋 מבחן מעשי - מערכת ניהול משתמשים
+#  מערכת ניהול משתמשים
 **Angular + C# Web API 2**
 
 ---
 
 ## 🚀 הרצת הפרויקט
-
+.
 ### Backend (C# API)
 1. פתח את הפרויקט ב-Visual Studio
 2. הרץ את הפרויקט (F5)
@@ -41,40 +41,6 @@
 
 ---
 
-## ✨ תכונות שיושמו
-
-### דרישות המבחן:
-- ✅ הצגת רשימת משתמשים (GET)
-- ✅ הוספת משתמש חדש (POST)
-- ✅ חיבור Angular ל-Web API
-- ✅ טיפול ב-CORS
-- ✅ שימוש ב-HttpClient ו-Observable
-
-### תכונות נוספות (Bonus):
-- ✅ עריכת משתמש (PUT)
-- ✅ מחיקת משתמש (DELETE)
-- ✅ ממשק משתמש מעוצב ונוח
-- ✅ הודעות הצלחה/שגיאה
-- ✅ אינדיקטור טעינה
-- ✅ אימות קלט (Validation)
-
----
-
-## 🔧 טכנולוגיות
-
-**Frontend:**
-- Angular (Standalone Components)
-- TypeScript
-- RxJS
-- HttpClient
-
-**Backend:**
-- C# Web API 2
-- .NET Framework 4.8
-- CORS enabled
-- Mock Data (ללא בסיס נתונים)
-
----
 
 ## 📡 API Endpoints
 
@@ -121,16 +87,6 @@
 
 ---
 
-## 🎯 מה שהושג במבחן
-
-הפרויקט מדגים:
-- הבנת ארכיטקטורת Client-Server
-- יכולת עבודה עם Angular Components ו-Services
-- בניית RESTful API ב-C#
-- טיפול בתקשורת אסינכרונית (Observables)
-- פתרון בעיות CORS
-- עיצוב UI/UX בסיסי
-
 ---
 
 **זמן פיתוח:** ~4 שעות  
@@ -139,7 +95,6 @@
 ---
 
 <div align="center">
-
-**תודה על ההזדמנות! 🚀**
+*
 
 </div>
