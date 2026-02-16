@@ -30,6 +30,17 @@ jobs:
         ls -R Backend/Test/publish
         echo "================================"
     
+    - name: Clean EC2 directory
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_IP }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.NEW_REPOSITORY_SECRET }}
+        port: 22
+        script: |
+          rm -rf ~/UserListAppBackend/*
+          echo "Cleaned UserListAppBackend directory"
+    
     - name: Deploy to EC2
       uses: appleboy/scp-action@v0.1.6
       with:
@@ -37,8 +48,8 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.NEW_REPOSITORY_SECRET }}
         port: 22
-        source: "Backend/Test/publish/*"
-        target: "~/UserListAppBackend/"
+        source: "Backend/Test/publish/"
+        target: "~/UserListAppBackend"
         strip_components: 3
     
     - name: Verify files on EC2
