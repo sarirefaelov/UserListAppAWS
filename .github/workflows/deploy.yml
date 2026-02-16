@@ -77,14 +77,23 @@ jobs:
           DLL_PATH=~/UserListAppBackend/Test.dll
           if [ -f $DLL_PATH ]; then
             echo "DLL found! Starting backend..."
+            
+            # עצור תהליכים קודמים
             pkill -f 'dotnet Test.dll' || true
             sleep 2
-            nohup dotnet $DLL_PATH > ~/UserListAppBackend/log.txt 2>&1 &
-            sleep 2
+            
+            # הרץ את ה-backend עם הפרדה מלאה מה-session
+            setsid nohup dotnet $DLL_PATH > ~/UserListAppBackend/log.txt 2>&1 < /dev/null &
+            
+            # המתן קצת ובדוק
+            sleep 3
+            
             if pgrep -f 'dotnet Test.dll' > /dev/null; then
-              echo "Backend started successfully and is running."
+              echo "✓ Backend started successfully and is running."
+              echo "Process ID: $(pgrep -f 'dotnet Test.dll')"
             else
-              echo "Warning: Backend may not be running."
+              echo "✗ Warning: Backend may not be running."
+              echo "Check log: tail -f ~/UserListAppBackend/log.txt"
             fi
           else
             echo "Error: Test.dll not found in ~/UserListAppBackend"
