@@ -63,7 +63,7 @@ jobs:
           echo "Files in UserListAppBackend:"
           ls -l ~/UserListAppBackend
     
-    - name: Start Backend on EC2
+   - name: Start Backend on EC2
       uses: appleboy/ssh-action@v0.1.7
       with:
         host: ${{ secrets.EC2_IP }}
@@ -75,8 +75,14 @@ jobs:
           if [ -f $DLL_PATH ]; then
             echo "DLL found! Starting backend..."
             pkill -f 'dotnet Test.dll' || true
+            sleep 2
             nohup dotnet $DLL_PATH > ~/UserListAppBackend/log.txt 2>&1 &
-            echo "Backend started successfully."
+            sleep 2
+            if pgrep -f 'dotnet Test.dll' > /dev/null; then
+              echo "Backend started successfully and is running."
+            else
+              echo "Warning: Backend may not be running."
+            fi
           else
             echo "Error: Test.dll not found in ~/UserListAppBackend"
             exit 1
