@@ -3,7 +3,7 @@ name: Deploy Backend to AWS EC2
 on:
   push:
     branches:
-      - main  # יופעל רק כשדוחפים ל-main
+      - main  # ריצה רק כשדוחפים ל-main
 
 jobs:
   deploy:
@@ -26,6 +26,12 @@ jobs:
 
     - name: Publish Backend
       run: dotnet publish Backend/Test/Test.csproj --configuration Release --output ./Backend/Test/publish
+
+    - name: List published files (debug)
+      run: |
+        echo "==== Files in publish folder ===="
+        ls -R Backend/Test/publish
+        echo "================================"
 
     - name: Deploy to EC2
       uses: appleboy/scp-action@v0.1.6
