@@ -18,22 +18,12 @@ jobs:
       with:
         dotnet-version: '8.0.x'
     
-    - name: Restore dependencies
-      run: dotnet restore Backend/Test/Test.csproj
-    
-    - name: Build Backend
-      run: dotnet build Backend/Test/Test.csproj --configuration Release --no-restore
-    
-    - name: Publish Backend
-      run: dotnet publish Backend/Test/Test.csproj --configuration Release --output ./Backend/Test/publish
-    
-    - name: List published files (debug)
+    - name: Build and Publish Backend
       run: |
-        echo "==== Files in publish folder ===="
-        ls -R Backend/Test/publish
-        echo "================================"
+        dotnet restore Backend/Test/Test.csproj
+        dotnet publish Backend/Test/Test.csproj --configuration Release --output ./publish
     
-    - name: Stop Backend Service
+    - name: Deploy and Restart Service
       uses: appleboy/ssh-action@v0.1.7
       with:
         host: ${{ secrets.EC2_IP }}
@@ -41,32 +31,24 @@ jobs:
         key: ${{ secrets.NEW_REPOSITORY_SECRET }}
         port: 22
         script: |
-          echo "Stopping userlistapp service..."
-          sudo systemctl stop userlistapp || true
-    
-    - name: Clean EC2 directory
-      uses: appleboy/ssh-action@v0.1.7
-      with:
-        host: ${{ secrets.EC2_IP }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.NEW_REPOSITORY_SECRET }}
-        port: 22
-        script: |
+          echo "🛑 Stopping service..."
+          sudo systemctl stop userlistapp
+          
+          echo "🧹 Cleaning directory..."
           rm -rf ~/UserListAppBackend/*
-          echo "Cleaned UserListAppBackend directory"
     
-    - name: Deploy to EC2
+    - name: Copy Files to EC2
       uses: appleboy/scp-action@v0.1.6
       with:
         host: ${{ secrets.EC2_IP }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.NEW_REPOSITORY_SECRET }}
         port: 22
-        source: "Backend/Test/publish/"
+        source: "publish/*"
         target: "~/UserListAppBackend"
-        strip_components: 3
+        strip_components: 1
     
-    - name: Verify files on EC2
+    - name: Start Service
       uses: appleboy/ssh-action@v0.1.7
       with:
         host: ${{ secrets.EC2_IP }}
@@ -74,34 +56,14 @@ jobs:
         key: ${{ secrets.NEW_REPOSITORY_SECRET }}
         port: 22
         script: |
-          echo "Files in UserListAppBackend:"
-          ls -l ~/UserListAppBackend
-    
-    - name: Start Backend Service
-      uses: appleboy/ssh-action@v0.1.7
-      with:
-        host: ${{ secrets.EC2_IP }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.NEW_REPOSITORY_SECRET }}
-        port: 22
-        script: |
-          echo "Starting userlistapp service..."
-          sudo systemctl daemon-reload
+          echo "🚀 Starting service..."
           sudo systemctl start userlistapp
-          sleep 3
+          sleep 2
           
           if sudo systemctl is-active --quiet userlistapp; then
-            echo "✓ Service is running!"
-            sudo systemctl status userlistapp --no-pager -l
-            echo ""
-            echo "Listening on:"
-            sudo ss -tulpn | grep dotnet || echo "Port info not available"
+            echo "✅ Service running on port $(sudo ss -tulpn | grep dotnet | awk '{print $5}' | cut -d':' -f2)"
           else
-            echo "✗ Service failed to start!"
-            echo "Service status:"
-            sudo systemctl status userlistapp --no-pager -l
-            echo ""
-            echo "Recent logs:"
-            sudo journalctl -u userlistapp -n 50 --no-pager
+            echo "❌ Failed! Logs:"
+            sudo journalctl -u userlistapp -n 30 --no-pager
             exit 1
           fi
