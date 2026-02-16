@@ -51,6 +51,13 @@ jobs:
         key: ${{ secrets.NEW_REPOSITORY_SECRET }}
         port: 22
         script: |
-          pkill -f 'dotnet Test.dll' || true
-          nohup dotnet ~/UserListAppBackend/Test.dll > ~/UserListAppBackend/log.txt 2>&1 &
+          # בדיקה אם ה-DLL נמצא לפני הפעלתו
+          if [ -f ~/UserListAppBackend/Test.dll ]; then
+            pkill -f 'dotnet Test.dll' || true
+            nohup dotnet ~/UserListAppBackend/Test.dll > ~/UserListAppBackend/log.txt 2>&1 &
+            echo "Backend started successfully"
+          else
+            echo "Error: Test.dll not found in ~/UserListAppBackend"
+            exit 1
+          fi
         debug: true
