@@ -43,7 +43,7 @@ jobs:
         source: "./Backend/Test/publish/*"
         target: "~/UserListAppBackend/"
 
-    - name: Start Backend on EC2
+    - name: Check DLL exists and Start Backend on EC2
       uses: appleboy/ssh-action@v0.1.7
       with:
         host: ${{ secrets.EC2_IP }}
@@ -51,11 +51,12 @@ jobs:
         key: ${{ secrets.NEW_REPOSITORY_SECRET }}
         port: 22
         script: |
-          # בדיקה אם ה-DLL נמצא לפני הפעלתו
+          echo "Checking if Test.dll exists..."
           if [ -f ~/UserListAppBackend/Test.dll ]; then
+            echo "DLL found! Starting backend..."
             pkill -f 'dotnet Test.dll' || true
             nohup dotnet ~/UserListAppBackend/Test.dll > ~/UserListAppBackend/log.txt 2>&1 &
-            echo "Backend started successfully"
+            echo "Backend started successfully."
           else
             echo "Error: Test.dll not found in ~/UserListAppBackend"
             exit 1
