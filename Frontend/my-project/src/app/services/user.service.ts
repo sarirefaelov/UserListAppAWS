@@ -14,7 +14,9 @@ private apiUrl = 'http://34.224.165.170:5234/api/users';
   // GET - Receive XML
   // GET - Receive JSON
 getUsers(): Observable<User[]> {
+  
   return this.http.get<User[]>(this.apiUrl).pipe(
+    
     tap(users => console.log('✅ Users loaded successfully:', users)),
     catchError(error => {
       console.error('HTTP Error:', error);
