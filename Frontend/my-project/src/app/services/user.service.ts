@@ -7,7 +7,7 @@ import { XMLParser } from 'fast-xml-parser';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
-private apiUrl = 'http://34.224.165.170:5234/api/users';
+apiUrl = '/api/users';
 
   constructor(private http: HttpClient) {}
 
