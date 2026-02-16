@@ -4,7 +4,7 @@
 ---
 
 ## 🚀 הרצת הפרויקט
-
+.
 ### Backend (C# API)
 1. פתח את הפרויקט ב-Visual Studio
 2. הרץ את הפרויקט (F5)
