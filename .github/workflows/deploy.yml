@@ -3,44 +3,105 @@ name: Deploy Backend to AWS EC2
 on:
   push:
     branches:
-      - main  # יופעל רק כשדוחפים ל-main
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-
+    
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: '8.0.x'
-
+    
     - name: Restore dependencies
       run: dotnet restore Backend/Test/Test.csproj
-
+    
     - name: Build Backend
       run: dotnet build Backend/Test/Test.csproj --configuration Release --no-restore
-
+    
     - name: Publish Backend
       run: dotnet publish Backend/Test/Test.csproj --configuration Release --output ./Backend/Test/publish
-
-    - name: Deploy to EC2
+    
+    - name: List published files (debug)
+      run: |
+        echo "==== Files in publish folder ===="
+        ls -R Backend/Test/publish
+        echo "================================"
+    
+    - name: Stop Backend Service
       uses: appleboy/ssh-action@v0.1.7
       with:
         host: ${{ secrets.EC2_IP }}
         username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.NEW_REPOSITORY_SECRET }}  # כאן המפתח הפרטי מה-secret
+        key: ${{ secrets.NEW_REPOSITORY_SECRET }}
         port: 22
         script: |
-          mkdir -p ~/UserListAppBackend
+          echo "Stopping userlistapp service..."
+          sudo systemctl stop userlistapp || true
+    
+    - name: Clean EC2 directory
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_IP }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.NEW_REPOSITORY_SECRET }}
+        port: 22
+        script: |
           rm -rf ~/UserListAppBackend/*
-          cp -r ./Backend/Test/publish/* ~/UserListAppBackend/
-          # הפעלת השירות ברקע:
-          pkill -f 'dotnet Test.dll' || true
-          nohup dotnet ~/UserListAppBackend/Test.dll > ~/UserListAppBackend/log.txt 2>&1 &
-        debug: true
-        timeout: 30s
-        command_timeout: 10m
+          echo "Cleaned UserListAppBackend directory"
+    
+    - name: Deploy to EC2
+      uses: appleboy/scp-action@v0.1.6
+      with:
+        host: ${{ secrets.EC2_IP }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.NEW_REPOSITORY_SECRET }}
+        port: 22
+        source: "Backend/Test/publish/"
+        target: "~/UserListAppBackend"
+        strip_components: 3
+    
+    - name: Verify files on EC2
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_IP }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.NEW_REPOSITORY_SECRET }}
+        port: 22
+        script: |
+          echo "Files in UserListAppBackend:"
+          ls -l ~/UserListAppBackend
+    
+    - name: Start Backend Service
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_IP }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.NEW_REPOSITORY_SECRET }}
+        port: 22
+        script: |
+          echo "Starting userlistapp service..."
+          sudo systemctl daemon-reload
+          sudo systemctl start userlistapp
+          sleep 3
+          
+          if sudo systemctl is-active --quiet userlistapp; then
+            echo "✓ Service is running!"
+            sudo systemctl status userlistapp --no-pager -l
+            echo ""
+            echo "Listening on:"
+            sudo ss -tulpn | grep dotnet || echo "Port info not available"
+          else
+            echo "✗ Service failed to start!"
+            echo "Service status:"
+            sudo systemctl status userlistapp --no-pager -l
+            echo ""
+            echo "Recent logs:"
+            sudo journalctl -u userlistapp -n 50 --no-pager
+            exit 1
+          fi
