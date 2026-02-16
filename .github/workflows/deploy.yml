@@ -10,37 +10,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '8.0.x'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
 
-    - name: Restore dependencies
-      run: dotnet restore Backend/Test/Test.csproj
+      - name: Restore dependencies
+        run: dotnet restore Backend/Test/Test.csproj
 
-    - name: Build Backend
-      run: dotnet build Backend/Test/Test.csproj --configuration Release --no-restore
+      - name: Build Backend
+        run: dotnet build Backend/Test/Test.csproj --configuration Release --no-restore
 
-    - name: Publish Backend
-      run: dotnet publish Backend/Test/Test.csproj --configuration Release --output ./Backend/Test/publish
+      - name: Publish Backend
+        run: dotnet publish Backend/Test/Test.csproj --configuration Release --output ./Backend/Test/publish
 
-    - name: Deploy to EC2
-      uses: appleboy/ssh-action@v0.1.7
-      with:
-        host: ${{ secrets.EC2_IP }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.NEW_REPOSITORY_SECRET }}  # כאן המפתח הפרטי מה-secret
-        port: 22
-        script: |
-          mkdir -p ~/UserListAppBackend
-          rm -rf ~/UserListAppBackend/*
-          cp -r ./Backend/Test/publish/* ~/UserListAppBackend/
-          # הפעלת השירות ברקע:
-          pkill -f 'dotnet Test.dll' || true
-          nohup dotnet ~/UserListAppBackend/Test.dll > ~/UserListAppBackend/log.txt 2>&1 &
-        debug: true
-        timeout: 30s
-        command_timeout: 10m
+      - name: Debug EC2 info
+        run: |
+          echo "EC2 IP: ${{ secrets.EC2_IP }}"
+          echo "EC2 USER: ${{ secrets.EC2_USER }}"
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_IP }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.NEW_REPOSITORY_SECRET }}  # המפתח הפרטי מה-secret
+          port: 22
+          script: |
+            mkdir -p ~/UserListAppBackend
+            rm -rf ~/UserListAppBackend/*
+            cp -r ./Backend/Test/publish/* ~/UserListAppBackend/
+            # הפעלת השירות ברקע:
+            pkill -f 'dotnet Test.dll' || true
+            nohup dotnet ~/UserListAppBackend/Test.dll > ~/UserListAppBackend/log.txt 2>&1 &
+          debug: true
+          timeout: 30s
+          command_timeout: 10m
