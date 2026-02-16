@@ -1,38 +1,35 @@
 name: Deploy Backend to AWS EC2
-
 on:
   push:
     branches:
       - main  # ריצה רק כשדוחפים ל-main
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-
+    
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: '8.0.x'
-
+    
     - name: Restore dependencies
       run: dotnet restore Backend/Test/Test.csproj
-
+    
     - name: Build Backend
       run: dotnet build Backend/Test/Test.csproj --configuration Release --no-restore
-
+    
     - name: Publish Backend
       run: dotnet publish Backend/Test/Test.csproj --configuration Release --output ./Backend/Test/publish
-
+    
     - name: List published files (debug)
       run: |
         echo "==== Files in publish folder ===="
         ls -R Backend/Test/publish
         echo "================================"
-
+    
     - name: Deploy to EC2
       uses: appleboy/scp-action@v0.1.6
       with:
@@ -40,10 +37,10 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.NEW_REPOSITORY_SECRET }}
         port: 22
-        source: "./Backend/Test/publish/*"
+        source: "Backend/Test/publish/*"
         target: "~/UserListAppBackend/"
-        strip_components: 1  # מסיר את תיקיית publish עצמה
-
+        strip_components: 3
+    
     - name: Verify files on EC2
       uses: appleboy/ssh-action@v0.1.7
       with:
@@ -54,7 +51,7 @@ jobs:
         script: |
           echo "Files in UserListAppBackend:"
           ls -l ~/UserListAppBackend
-
+    
     - name: Start Backend on EC2
       uses: appleboy/ssh-action@v0.1.7
       with:
@@ -73,4 +70,3 @@ jobs:
             echo "Error: Test.dll not found in ~/UserListAppBackend"
             exit 1
           fi
-        debug: true
