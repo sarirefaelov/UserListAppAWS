@@ -3,7 +3,7 @@ name: Deploy Backend to AWS EC2
 on:
   push:
     branches:
-      - main  # ריצה רק כשדוחפים ל-main
+      - main
 
 jobs:
   deploy:
@@ -32,6 +32,17 @@ jobs:
         echo "==== Files in publish folder ===="
         ls -R Backend/Test/publish
         echo "================================"
+    
+    - name: Stop Backend Service
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_IP }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.NEW_REPOSITORY_SECRET }}
+        port: 22
+        script: |
+          echo "Stopping userlistapp service..."
+          sudo systemctl stop userlistapp || true
     
     - name: Clean EC2 directory
       uses: appleboy/ssh-action@v0.1.7
@@ -66,7 +77,7 @@ jobs:
           echo "Files in UserListAppBackend:"
           ls -l ~/UserListAppBackend
     
-    - name: Start Backend on EC2
+    - name: Start Backend Service
       uses: appleboy/ssh-action@v0.1.7
       with:
         host: ${{ secrets.EC2_IP }}
@@ -74,28 +85,23 @@ jobs:
         key: ${{ secrets.NEW_REPOSITORY_SECRET }}
         port: 22
         script: |
-          DLL_PATH=~/UserListAppBackend/Test.dll
-          if [ -f $DLL_PATH ]; then
-            echo "DLL found! Starting backend..."
-            
-            # עצור תהליכים קודמים
-            pkill -f 'dotnet Test.dll' || true
-            sleep 2
-            
-            # הרץ את ה-backend עם הפרדה מלאה מה-session
-            setsid nohup dotnet $DLL_PATH > ~/UserListAppBackend/log.txt 2>&1 < /dev/null &
-            
-            # המתן קצת ובדוק
-            sleep 3
-            
-            if pgrep -f 'dotnet Test.dll' > /dev/null; then
-              echo "✓ Backend started successfully and is running."
-              echo "Process ID: $(pgrep -f 'dotnet Test.dll')"
-            else
-              echo "✗ Warning: Backend may not be running."
-              echo "Check log: tail -f ~/UserListAppBackend/log.txt"
-            fi
+          echo "Starting userlistapp service..."
+          sudo systemctl daemon-reload
+          sudo systemctl start userlistapp
+          sleep 3
+          
+          if sudo systemctl is-active --quiet userlistapp; then
+            echo "✓ Service is running!"
+            sudo systemctl status userlistapp --no-pager -l
+            echo ""
+            echo "Listening on:"
+            sudo ss -tulpn | grep dotnet || echo "Port info not available"
           else
-            echo "Error: Test.dll not found in ~/UserListAppBackend"
+            echo "✗ Service failed to start!"
+            echo "Service status:"
+            sudo systemctl status userlistapp --no-pager -l
+            echo ""
+            echo "Recent logs:"
+            sudo journalctl -u userlistapp -n 50 --no-pager
             exit 1
           fi
