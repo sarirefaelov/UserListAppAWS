@@ -10,37 +10,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1️⃣ בדיקה של הקוד מה־repo
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # 2️⃣ התקנת .NET
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: '8.0.x'
 
-    # 3️⃣ Restore Dependencies
     - name: Restore dependencies
       run: dotnet restore Backend/Test/Test.csproj
 
-    # 4️⃣ Build Backend
     - name: Build Backend
       run: dotnet build Backend/Test/Test.csproj --configuration Release --no-restore
 
-    # 5️⃣ Publish Backend
     - name: Publish Backend
       run: dotnet publish Backend/Test/Test.csproj --configuration Release --output ./Backend/Test/publish
 
-    # 6️⃣ Deploy ל-EC2
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v0.1.7
       with:
         host: ${{ secrets.EC2_IP }}
         username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_SSH_KEY }}
+        key: ${{ secrets.NEW_REPOSITORY_SECRET }}  # כאן המפתח הפרטי מה-secret
         port: 22
-        debug: true  # מדפיס מידע כדי לראות בעיות אם יש
         script: |
           mkdir -p ~/UserListAppBackend
           rm -rf ~/UserListAppBackend/*
@@ -48,5 +41,6 @@ jobs:
           # הפעלת השירות ברקע:
           pkill -f 'dotnet Test.dll' || true
           nohup dotnet ~/UserListAppBackend/Test.dll > ~/UserListAppBackend/log.txt 2>&1 &
-      env:
-        DOTNET_ROOT: /usr/share/dotnet
+        debug: true
+        timeout: 30s
+        command_timeout: 10m
