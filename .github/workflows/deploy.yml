@@ -43,7 +43,7 @@ jobs:
         source: "./Backend/Test/publish/*"
         target: "~/UserListAppBackend/"
 
-    - name: Check DLL exists and Start Backend on EC2
+    - name: Verify files on EC2
       uses: appleboy/ssh-action@v0.1.7
       with:
         host: ${{ secrets.EC2_IP }}
@@ -51,11 +51,23 @@ jobs:
         key: ${{ secrets.NEW_REPOSITORY_SECRET }}
         port: 22
         script: |
-          echo "Checking if Test.dll exists..."
-          if [ -f ~/UserListAppBackend/Test.dll ]; then
+          echo "==== Listing files in ~/UserListAppBackend ===="
+          ls -R ~/UserListAppBackend
+          echo "================================"
+
+    - name: Start Backend on EC2
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_IP }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.NEW_REPOSITORY_SECRET }}
+        port: 22
+        script: |
+          DLL_PATH=~/UserListAppBackend/Test.dll
+          if [ -f $DLL_PATH ]; then
             echo "DLL found! Starting backend..."
             pkill -f 'dotnet Test.dll' || true
-            nohup dotnet ~/UserListAppBackend/Test.dll > ~/UserListAppBackend/log.txt 2>&1 &
+            nohup dotnet $DLL_PATH > ~/UserListAppBackend/log.txt 2>&1 &
             echo "Backend started successfully."
           else
             echo "Error: Test.dll not found in ~/UserListAppBackend"
